@@ -1,0 +1,145 @@
+﻿@model Tarefas.Models.TarefaModel
+@using Tarefas.Extended
+
+    @{
+        ViewBag.Title = "Cadastro";
+        var dataCriacao = Model.DataCriacao.ToString("dd/MM/yyyy");
+        var dataAgendamento = Model.DataAgendamento.HasValue ? Model.DataAgendamento.Value.ToString("dd/MM/yyyy") : "";
+        var dataConclusao = Model.DataConclusao.HasValue ? Model.DataConclusao.Value.ToString("dd/MM/yyyy") : "";
+    }
+
+    <link href="~/Content/bootstrap-datepicker3.min.css" rel="stylesheet">
+
+    <h2>@ViewBag.Title</h2>
+
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>TarefaModel</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Titulo, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Titulo, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Titulo, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Descricao, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Descricao, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Descricao, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.DataCriacao, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.DataCriacao, new { htmlAttributes = new { @class = "form-control date" } })
+                    @Html.ValidationMessageFor(model => model.DataCriacao, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.DataAgendamento, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.DataAgendamento, new { htmlAttributes = new { @class = "form-control date" } })
+                    @Html.ValidationMessageFor(model => model.DataAgendamento, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.DataConclusao, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.DataConclusao, new { htmlAttributes = new { @class = "form-control date" } })
+                    @Html.ValidationMessageFor(model => model.DataConclusao, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Criador, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Criador, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.Criador, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.TimeModelId, null, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownList("TimeModelId", null, htmlAttributes: new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.TimeModelId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Responsavel, null, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownList("Responsavel", null, htmlAttributes: new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.Responsavel, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Save" class="btn btn-default" />
+                </div>
+            </div>
+        </div>
+    }
+
+    <div>
+        @Html.ActionLink("Back to List", "Index")
+    </div>
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        <!--Reference the SignalR library. -->
+        <script src="~/Scripts/jquery.signalR-2.2.2.min.js"></script>
+        <!--Reference the autogenerated SignalR hub script. -->
+        <script src="~/signalr/hubs"></script>
+        <script src="~/Scripts/bootstrap-datepicker.min.js"></script>
+        <script>
+        $(function () {
+            $.validator.addMethod('date',
+                function (value, element) {
+                    $.culture = Globalize.culture("pt-BR");
+                    var date = Globalize.parseDate(value, "dd/MM/yyyy", "pt-BR");
+                    return this.optional(element) ||
+                        !/Invalid|NaN/.test(new Date(date).toString());
+                });
+            $('.date').datepicker({
+                format: 'dd/mm/yyyy',
+                startDate: '-3d',
+                language: 'pt-BR'
+            });
+            $('#DataCriacao').val('@dataCriacao');
+            $('#DataAgendamento').val('@dataAgendamento');
+            $('#DataConclusao').val('@dataConclusao');
+            $("#Titulo").focus();
+
+            $('#TimeModelId').change(function () {
+                var id = this.value;
+
+                $.get('@Url.Action("CarregarUsuariosDoTime", "Times")', { id: id }, function (ret) {
+                    var html = `<option value="">Nenhum Responsável</option>`;
+
+                    $.each(ret, function (k, v) {
+                        html += `<option value="${v.Apelido}">${v.Apelido}</option>`;
+                    });
+
+                    $('#Responsavel').empty().append(html);
+                });
+            });
+        });
+
+        connectHub('@User.GetNickName()', false);
+        </script>
+    }

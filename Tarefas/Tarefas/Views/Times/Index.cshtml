@@ -1,0 +1,85 @@
+﻿@model IEnumerable<Tarefas.Models.TimeModel>
+@using Tarefas.Extended
+
+@{
+    ViewBag.Title = "Gerenciamento de Times";
+}
+
+<h2>Index</h2>
+
+<p>
+    <a href="@Url.Action("Cadastro", "Times")" class="btn btn-primary btn-sm">
+        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Novo Time
+    </a>
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Nome)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Dono)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nome)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Dono)
+            </td>
+            <td>
+                <a href="@Url.Action("Cadastro", "Times")/@item.Id" class="btn btn-primary btn-xs">
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                </a>
+                <button class="btn btn-danger btn-xs" onclick="excluir(this, event, @item.Id)">
+                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                </button>
+                <a href="@Url.Action("UsuariosTime", "Times")/@item.Id" class="btn btn-info btn-xs">
+                    <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                </a>
+            </td>
+        </tr>
+    }
+
+</table>
+
+@section scripts {
+    <script>
+        function excluir(el, event, id) {
+            event.preventDefault();
+            var btn = $(el);
+
+            btn.attr('disabled', true);
+
+            var confirmacao = confirm('Tem certeza de que deseja excluir este registro?');
+
+            if (confirmacao) {
+                $.ajax({
+                    url: '@Url.Action("Excluir", "Times")',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { id: id },
+                    error: function (x, y, z) {
+                        // fazer o tratamento do erro
+                    },
+                    success: function (ret) {
+                        if (ret.excluiu) {
+                            var tr = btn.parent().parent();
+                            tr.remove();
+                        } else {
+                            alert(ret.msg);
+                            btn.attr('disabled', false);
+                        }
+                    }
+                });
+            }
+        }
+
+        connectHub('@User.GetNickName()', false);
+    </script>
+}

@@ -1,0 +1,47 @@
+﻿@using Tarefas.Extended
+<div class="jumbotron">
+    <h1>FCV Pós</h1>
+    <p class="lead">FCV Pós é um conjunto de ferramentas para auxiliar os alunos de pós graduação da FCV</p>
+    <p>
+        @if (User.Identity.IsAuthenticated)
+        {
+            if ((bool)ViewBag.UsaTarefas)
+            {
+                <span>
+                    Você já está usando o serviço de tarefas.
+                    <br />
+                    Sendo assim, você pode...
+                </span>
+                <br />
+                <a href="@Url.Action("Index", "Tarefas")">Ir para suas tarefas</a>
+                <br />
+                <span>ou</span>
+                <br />
+                <a href="@Url.Action("Index", "Times")">Gerenciar seus times</a>
+            }
+            else
+            {
+                <span>Você ainda não está usando o serviço de tarefas.</span>
+                <br />
+                <a href="@Url.Action("Entrar", "Times")">Começar a usar as tarefas agora!</a>
+            }
+        }
+        else
+        {
+            <a href="@Url.Action("Register", "Account")">Registre-se e conheça os serviços disponíveis!</a>
+            <br />
+            <span>ou</span>
+            <br />
+            <a href="@Url.Action("Login", "Account")">Entre com seu login e senha e comece a usar agora!</a>
+        }
+    </p>
+</div>
+
+@section scripts{
+    @if (User.Identity.IsAuthenticated)
+    {
+        <script>
+            connectHub('@User.GetNickName()', true);
+        </script>
+    }
+}

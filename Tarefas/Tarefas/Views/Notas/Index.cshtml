@@ -1,0 +1,74 @@
+﻿@model IEnumerable<Tarefas.Models.NotasModel>
+@using Tarefas.Extended
+
+@{
+    ViewBag.Title = "Gerenciamento de Notas";
+}
+<h2>Index</h2>
+<p>
+    <a href="@Url.Action("Create", "Notas")" class="btn btn-primary btn-sm">
+        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Nova Nota
+    </a>
+</p>
+
+
+
+@foreach (var item in Model)
+{
+    if (item.Usuario.IsEmpty())
+    {
+        item.Usuario = "Anônimo";
+    }
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Criado em @Html.DisplayFor(modelItem => item.dataHora) por @Html.DisplayFor(modelItem => item.Usuario)</div>
+        <div class="panel-body">
+            @Html.DisplayFor(modelItem => item.Texto) 
+        </div>
+        <div class="panel-footer">            
+            <button class="btn btn-sm btn-danger"  onclick="excluir(this, event, @item.Id)">
+                <i class="glyphicon glyphicon-trash"></i> Deletar
+            </button> 
+            <a class="btn btn-sm btn-warning" href="@Url.Action("Create", "Notas")/@item.Id">
+                <i class="glyphicon glyphicon-pencil"></i> Editar
+            </a> 
+        </div>
+    </div>
+
+}
+
+
+@section scripts {
+    <script>
+        function excluir(el, event, id) {
+            event.preventDefault();
+            var btn = $(el);
+
+            btn.attr('disabled', true);
+
+            var confirmacao = confirm('Tem certeza de que deseja excluir este registro?');
+
+            if (confirmacao) {
+                $.ajax({
+                    url: '@Url.Action("Excluir", "Notas")',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { id: id },
+                    error: function (x, y, z) {
+                        // fazer o tratamento do erro
+                    },
+                    success: function (ret) {
+                        if (ret.excluiu) {
+                            var tr = btn.parent().parent();
+                            tr.remove();
+                        } else {
+                            alert(ret.msg);
+                            btn.attr('disabled', false);
+                        }
+                    }
+                });
+            }
+        }
+        connectHub('@User.GetNickName()', false);
+    </script>
+ }
